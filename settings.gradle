@@ -1,0 +1,7 @@
+include ':native-player'
+include ':service'
+include ':video-player'
+include ':tick-manager'
+include ':gl-view'
+include ':app'
+rootProject.name = "MediaSyncPlayer"

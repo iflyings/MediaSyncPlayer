@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.android.iflyings.mediaservice">
+
+    <application>
+        <service android:name="com.android.iflyings.mediaservice.MediaService"
+            android:enabled="true"
+            android:exported="true" />
+    </application>
+
+</manifest>
