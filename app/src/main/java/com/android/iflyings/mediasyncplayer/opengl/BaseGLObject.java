@@ -186,6 +186,11 @@ public class BaseGLObject {
             ShaderUtils.checkError();
         }
 
+        public void updateBitmap(Bitmap bitmap) {
+            mImageTexture.update(bitmap);
+            ShaderUtils.checkError();
+        }
+
         @CallSuper
         @Override
         protected void onCreated() {

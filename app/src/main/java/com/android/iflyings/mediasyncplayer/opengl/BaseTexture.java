@@ -86,7 +86,7 @@ public abstract class BaseTexture {
 
                 Matrix.setIdentityM(matrix, 0);
                 GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextureId);
-                if (mTextureWidth == bitmap.getWidth() && mTextureHeight == bitmap.getHeight()) {
+                if (true/*mTextureWidth == bitmap.getWidth() && mTextureHeight == bitmap.getHeight()*/) {
                     GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
                 } else {
                     int format = GLUtils.getInternalFormat(bitmap);
@@ -98,6 +98,14 @@ public abstract class BaseTexture {
                 }
                 ShaderUtils.checkError();
                 //解除纹理绑定
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            }
+        }
+
+        public void update(Bitmap bitmap) {
+            if (mTextureId != 0) {
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextureId);
+                GLUtils.texSubImage2D(GLES30.GL_TEXTURE_2D, 0, 0, 0, bitmap);
                 GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
             }
         }

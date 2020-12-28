@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.android.iflyings.mediasyncplayer.BuildConfig;
 import com.android.iflyings.mediasyncplayer.Constant;
 import com.android.iflyings.mediasyncplayer.CrashHandler;
+import com.android.iflyings.mediasyncplayer.info.TextInfo;
 import com.android.iflyings.mediasyncplayer.opengl.BaseGLObject;
 import com.android.iflyings.mediasyncplayer.opengl.component.Component;
 import com.android.iflyings.mediasyncplayer.opengl.component.EffectComponent;
@@ -145,6 +146,8 @@ public abstract class MediaData implements LoaderCallback {
             mediaData = new ImageData(mediaContext, (ImageInfo) mediaInfo);
         } else if (mediaInfo instanceof MaskInfo) {
             mediaData = new MaskData(mediaContext, (MaskInfo) mediaInfo);
+        } else if (mediaInfo instanceof TextInfo) {
+            mediaData = new TextData(mediaContext, (TextInfo) mediaInfo);
         }
         assert mediaData != null;
         if (mediaData.getGLObject() instanceof BaseGLObject.EffectGLObject) {

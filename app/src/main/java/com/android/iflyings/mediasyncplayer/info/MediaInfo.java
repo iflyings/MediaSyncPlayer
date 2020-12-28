@@ -67,6 +67,9 @@ public abstract class MediaInfo {
             case "source":
                 mediaInfo = SourceInfo.from(jsonObject);
                 break;
+            case "text":
+                mediaInfo = TextInfo.from(jsonObject);
+                break;
             default:
                 throw new IllegalArgumentException("type:" + type + " is unsupported");
         }

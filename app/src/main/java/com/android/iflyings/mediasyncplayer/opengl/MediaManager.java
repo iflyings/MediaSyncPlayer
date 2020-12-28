@@ -122,21 +122,15 @@ public class MediaManager {
 
     private void playNextMediaInUserThread() {
         MediaData nextMedia = null;
-        if (mMediaDataList.size() > 1) {
+        if (mMediaDataList.size() >= 1) {
             int nextIndex = (mCurrentMediaIndex + 1) % mMediaDataList.size();
             int startIndex = nextIndex;
             do {
                 MediaData mediaData = mMediaDataList.get(nextIndex);
-                if (mediaData.isMediaSupported()) {
-                    if (mediaData.isLoadMedia()) {
-                        nextMedia = mediaData;
-                        mCurrentMediaIndex = nextIndex;
-                        break;
-                    } else if (mediaData.loadMedia()) {
-                        nextMedia = mediaData;
-                        mCurrentMediaIndex = nextIndex;
-                        break;
-                    }
+                if (mediaData.isMediaSupported() && (mediaData.isLoadMedia() || mediaData.loadMedia())) {
+                    nextMedia = mediaData;
+                    mCurrentMediaIndex = nextIndex;
+                    break;
                 }
                 nextIndex = (nextIndex + 1) % mMediaDataList.size();
             } while (startIndex != nextIndex);
@@ -148,9 +142,6 @@ public class MediaManager {
             mCurrentMediaIndex = -1;
         }
         nextMedia.startMedia();
-        if (mMediaDataList.size() < 2) {
-            return;
-        }
         mMediaHandler.sendMessage(mMediaHandler.obtainMessage(MSG_START_ANIMATION, nextMedia));
     }
 
