@@ -150,7 +150,7 @@ public abstract class MediaData implements LoaderCallback {
             mediaData = new TextData(mediaContext, (TextInfo) mediaInfo);
         }
         assert mediaData != null;
-        if (mediaData.getGLObject() instanceof BaseGLObject.EffectGLObject) {
+        if (mediaData.getGLObject() instanceof BaseGLObject.EffectGLObject && !(mediaData instanceof TextData)) {
             mediaData.addComponent(EffectComponent.class, new EffectComponent((BaseGLObject.EffectGLObject)mediaData.getGLObject(), mediaInfo));
         }
         if (mediaInfo.getMediaToken() != null) {

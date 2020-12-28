@@ -59,6 +59,7 @@ public class ProgrammeUtils {
                     fo.put("type", "text");
                     fo.put("delay", 200);
                     fo.put("step", 10);
+                    fo.put("fontSize", 18);
                     fo.put("path", f.getAbsolutePath());
                     va.put(fo);
                 }

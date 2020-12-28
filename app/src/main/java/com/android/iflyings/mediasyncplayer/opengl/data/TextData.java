@@ -83,11 +83,11 @@ public class TextData extends MediaData {
             }
 
         }
-        mScrollPos = -mTextInfo.getBlockHeight();
     }
 
     @Override
     protected void onStartMedia() {
+        mScrollPos = -mTextInfo.getBlockHeight();
         runInUserThreadDelay(mUpdateRunning, mTextInfo.getDelay());
     }
 
