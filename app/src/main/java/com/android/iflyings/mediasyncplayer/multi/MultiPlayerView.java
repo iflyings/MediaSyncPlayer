@@ -14,6 +14,7 @@ import com.android.iflyings.mediasyncplayer.opengl.ShaderUtils;
 import com.android.iflyings.mediasyncplayer.impl.DebugPlayerImpl;
 import com.android.iflyings.mediasyncplayer.info.BlockInfo;
 import com.android.iflyings.mediasyncplayer.info.WindowInfo;
+import com.android.iflyings.mediasyncplayer.opengl.data.DecorativeTextData;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,6 @@
 package com.android.iflyings.mediasyncplayer.opengl;
 
+import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -7,8 +8,10 @@ import android.os.Process;
 
 import com.android.iflyings.mediasyncplayer.info.BlockInfo;
 import com.android.iflyings.mediasyncplayer.info.MediaInfo;
+import com.android.iflyings.mediasyncplayer.opengl.data.DecorativeTextData;
 import com.android.iflyings.mediasyncplayer.opengl.data.MediaData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,8 @@ public class BlockWindow implements MediaContext {
 
     private final BlockContext mBlockContext;
     private final BlockInfo mBlockInfo;
+
+    private DecorativeTextData mDecorativeTextData;
 
     private MediaManager mMediaManager;
     private HandlerThread mBackgroundThread;
@@ -62,14 +67,31 @@ public class BlockWindow implements MediaContext {
         }
         mMediaManager = new MediaManager(list, createNoMediaData());
         mMediaManager.startPlayer(mBackgroundThread.getLooper());
+
+        mBackgroundHandler.post(() -> {
+            if (mBlockInfo.getDecorativeTextInfo() != null) {
+                mDecorativeTextData = new DecorativeTextData(BlockWindow.this, mBlockInfo.getDecorativeTextInfo());
+                try {
+                    mDecorativeTextData.create();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
     public int draw(int index) {
         index = mMediaManager.drawPlayer(index);
+        if (mDecorativeTextData != null) {
+            index = mDecorativeTextData.drawMedia(index);
+        }
         return index;
     }
     public void destroy() {
         mBackgroundHandler.removeCallbacksAndMessages(null);
         mMediaManager.stopPlayer();
+        if (mDecorativeTextData != null) {
+            mDecorativeTextData.destroy();
+        }
         mBackgroundThread.quitSafely();
     }
 

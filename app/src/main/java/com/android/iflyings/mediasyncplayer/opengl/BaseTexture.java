@@ -2,7 +2,6 @@ package com.android.iflyings.mediasyncplayer.opengl;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES11Ext;
-import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -75,6 +74,7 @@ public abstract class BaseTexture {
             if (mTextureId != 0) {
                 int width = bitmap.getWidth();
                 int height = bitmap.getHeight();
+                /*
                 mTextureWidth = width > 0 ? nextPowerOf2(width) : 0;
                 mTextureHeight = height > 0 ? nextPowerOf2(height) : 0;
                 if (mTextureWidth > MAX_TEXTURE_SIZE || mTextureHeight > MAX_TEXTURE_SIZE) {
@@ -83,10 +83,13 @@ public abstract class BaseTexture {
                 if (mTextureWidth <= 0 || mTextureHeight <= 0) {
                     throw new IllegalStateException("Texture size is error");
                 }
+                */
+                mTextureWidth = width;
+                mTextureHeight = height;
 
                 Matrix.setIdentityM(matrix, 0);
                 GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextureId);
-                if (true/*mTextureWidth == bitmap.getWidth() && mTextureHeight == bitmap.getHeight()*/) {
+                if (mTextureWidth == width && mTextureHeight == height) {
                     GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
                 } else {
                     int format = GLUtils.getInternalFormat(bitmap);

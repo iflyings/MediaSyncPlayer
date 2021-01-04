@@ -18,6 +18,7 @@ public class BlockInfo {
     private int mWindowWidth;
     private int mWindowHeight;
     private List<MediaInfo> mMediaList;
+    private DecorativeTextInfo mTextInfo;
 
     public String getBlockName() {
         return mBlockName;
@@ -45,6 +46,9 @@ public class BlockInfo {
     }
     public MediaInfo getMediaInfo(int index) {
         return mMediaList.get(index);
+    }
+    public DecorativeTextInfo getDecorativeTextInfo() {
+        return mTextInfo;
     }
 
     public JSONObject toJSONObject() throws JSONException {
@@ -77,6 +81,9 @@ public class BlockInfo {
         for (int i = 0; i < list.length(); i++) {
             MediaInfo mi = MediaInfo.from(list.getJSONObject(i), bi);
             bi.mMediaList.add(mi);
+        }
+        if (jsonObject.has("text")) {
+            bi.mTextInfo = DecorativeTextInfo.from(bi, jsonObject.getJSONObject("text"));
         }
         return bi;
     }

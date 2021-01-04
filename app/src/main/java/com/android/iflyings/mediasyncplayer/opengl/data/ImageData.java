@@ -52,7 +52,7 @@ public class ImageData extends MediaData {
 
     @Override
     protected void onUnloadMedia() {
-        mImageLoader.onUnloadMedia();
+        mImageLoader.unloadMedia();
     }
 
     @NonNull

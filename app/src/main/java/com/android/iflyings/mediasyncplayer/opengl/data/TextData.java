@@ -1,15 +1,12 @@
 package com.android.iflyings.mediasyncplayer.opengl.data;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.text.StaticLayout;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.text.TextPaint;
 
 import androidx.annotation.NonNull;
 
-import com.android.iflyings.mediasyncplayer.Constant;
 import com.android.iflyings.mediasyncplayer.util.FileUtils;
 import com.android.iflyings.mediasyncplayer.info.TextInfo;
 import com.android.iflyings.mediasyncplayer.opengl.BaseGLObject;
@@ -17,17 +14,20 @@ import com.android.iflyings.mediasyncplayer.opengl.MediaContext;
 
 import java.io.IOException;
 
-public class TextData extends MediaData {
+public class TextData extends MediaData implements TextLoader.TextLoaderCallback {
     private final BaseGLObject.ImageGLObject mGLObject;
     private final TextInfo mTextInfo;
     private final TextPaint mTextPaint;
 
     private final Runnable mUpdateRunning = this::updateText;
 
-    private Bitmap mTextBitmap = null;
-    private StaticLayout mStaticLayout = null;
-    private int mTextHeight = 0;
+    private TextLoader mTextLoader;
+
+    private int mMaxScroll = 0;
     private int mScrollPos = 0;
+
+    private HandlerThread mUpdateThread;
+    private Handler mUpdateHandler;
 
     TextData(MediaContext mediaContext, TextInfo textInfo) {
         super(mediaContext, textInfo);
@@ -39,56 +39,36 @@ public class TextData extends MediaData {
     }
 
     private void updateText() {
-        Canvas canvas = new Canvas(mTextBitmap);
-        mTextBitmap.eraseColor(Color.TRANSPARENT);
-        canvas.translate(0, -mScrollPos);
-        mStaticLayout.draw(canvas);
-
         mScrollPos += mTextInfo.getStep();
-        runInGLThread(() -> mGLObject.updateBitmap(mTextBitmap));
-        if (mScrollPos >= mTextHeight) {
+        mTextLoader.updateText(0, -mScrollPos);
+        if (mScrollPos >= mMaxScroll) {
             notifyMediaCompletion();
             return;
         }
 
-        runInUserThreadDelay(mUpdateRunning, mTextInfo.getDelay());
+        mUpdateHandler.postDelayed(mUpdateRunning, mTextInfo.getDelay());
     }
 
     @Override
     protected void onLoadMedia() throws IOException {
-        if (mTextBitmap == null) {
+        if (mTextLoader == null) {
             String text = FileUtils.readStrFromFile(mTextInfo.getFilePath());
-            mStaticLayout = StaticLayout.Builder.obtain(text, 0, text.length(), mTextPaint,
-                    mTextInfo.getBlockWidth()).build();
-            mTextHeight = mStaticLayout.getHeight();
+            mTextLoader = new TextLoader(mGLObject, this, text, mTextPaint, mTextInfo.getBlockWidth());
+            mTextLoader.loadMedia(mTextInfo.getBlockWidth(), mTextInfo.getBlockHeight());
+            notifyMediaSize(mTextLoader.getWidth(), mTextLoader.getHeight());
 
-            mTextBitmap = Bitmap.createBitmap(mTextInfo.getBlockWidth(), mTextInfo.getBlockHeight(),
-                    Bitmap.Config.RGB_565);
-            notifyMediaSize(mTextBitmap.getWidth(), mTextBitmap.getHeight());
-
-            final Object lock = new Object();
-            runInGLThread(() -> {
-                mGLObject.create();
-                mGLObject.loadBitmap(mTextBitmap);
-                synchronized (lock) {
-                    lock.notify();
-                }
-            });
-            synchronized (lock) {
-                try {
-                    lock.wait(Constant.MEDIA_LOAD_MAX_TIME_MS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            mUpdateThread = new HandlerThread("TextData");
+            mUpdateThread.start();
+            mUpdateHandler = new Handler(mUpdateThread.getLooper());
         }
     }
 
     @Override
     protected void onStartMedia() {
         mScrollPos = -mTextInfo.getBlockHeight();
-        runInUserThreadDelay(mUpdateRunning, mTextInfo.getDelay());
+        mMaxScroll = mTextLoader.getHeight();
+
+        mUpdateHandler.postDelayed(mUpdateRunning, mTextInfo.getDelay());
     }
 
     @Override
@@ -103,10 +83,14 @@ public class TextData extends MediaData {
 
     @Override
     protected void onUnloadMedia() {
-        runInGLThread(mGLObject::destroy);
-        if (mTextBitmap != null) {
-            mTextBitmap.recycle();
-            mTextBitmap = null;
+        if (mUpdateThread != null) {
+            mUpdateHandler.removeCallbacksAndMessages(null);
+            mUpdateThread.quitSafely();
+            mUpdateThread = null;
+        }
+        if (mTextLoader != null) {
+            mTextLoader.unloadMedia();
+            mTextLoader = null;
         }
     }
 

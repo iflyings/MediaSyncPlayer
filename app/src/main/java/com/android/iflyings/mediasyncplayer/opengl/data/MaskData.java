@@ -63,7 +63,7 @@ public class MaskData extends MediaData {
     @Override
     protected void onUnloadMedia() {
         mVideoLoader.unloadMedia();
-        mImageLoader.onUnloadMedia();
+        mImageLoader.unloadMedia();
     }
 
 }

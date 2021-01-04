@@ -1,7 +1,6 @@
 package com.android.iflyings.mediasyncplayer.opengl.data;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import com.android.iflyings.mediasyncplayer.Constant;
 import com.android.iflyings.mediasyncplayer.MyApplication;
@@ -16,11 +15,11 @@ public class ImageLoader {
     private final String mImagePath;
     private final String mAssertName;
 
-    private final ImageGLObjectImpl mImageGLObjectImpl;
+    private final ImageGLObjectImpl mGLObjectImpl;
     private final LoaderCallback mLoaderCallback;
 
     public ImageLoader(ImageGLObjectImpl impl, LoaderCallback cb, String imagePath, String assertName) {
-        mImageGLObjectImpl = impl;
+        mGLObjectImpl = impl;
         mLoaderCallback = cb;
         mImagePath = imagePath;
         mAssertName = assertName;
@@ -42,8 +41,8 @@ public class ImageLoader {
         mLoaderCallback.notifyMediaSize(bitmap.getWidth(), bitmap.getHeight());
         final Bitmap finalBitmap = bitmap;
         mLoaderCallback.runInGLThread(() -> {
-            mImageGLObjectImpl.create();
-            mImageGLObjectImpl.loadBitmap(finalBitmap);
+            mGLObjectImpl.create();
+            mGLObjectImpl.loadBitmap(finalBitmap);
             synchronized (lock) {
                 lock.notify();
             }
@@ -58,8 +57,8 @@ public class ImageLoader {
         bitmap.recycle();
     }
 
-    public void onUnloadMedia() {
-        mLoaderCallback.runInGLThread(mImageGLObjectImpl::destroy);
+    public void unloadMedia() {
+        mLoaderCallback.runInGLThread(mGLObjectImpl::destroy);
     }
 
     public interface ImageGLObjectImpl {
@@ -70,7 +69,5 @@ public class ImageLoader {
 
         void loadBitmap(Bitmap bitmap);
 
-        float[] getTexMatrixData();
     }
-
 }

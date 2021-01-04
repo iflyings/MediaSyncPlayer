@@ -7,6 +7,7 @@ import android.opengl.Matrix;
 import androidx.annotation.CallSuper;
 
 import com.android.iflyings.mediasyncplayer.opengl.data.ImageLoader;
+import com.android.iflyings.mediasyncplayer.opengl.data.TextLoader;
 import com.android.iflyings.mediasyncplayer.opengl.data.VideoLoader;
 
 import java.nio.ByteBuffer;
@@ -168,7 +169,9 @@ public class BaseGLObject {
         }
     }
 
-    public static class ImageGLObject extends EffectGLObject implements ImageLoader.ImageGLObjectImpl {
+    public static class ImageGLObject extends EffectGLObject implements
+            ImageLoader.ImageGLObjectImpl, TextLoader.TextGLObjectImpl {
+
         private final BaseShader.ImageShader mImageShader;
         private final BaseTexture.ImageTexture mImageTexture;
 
@@ -245,7 +248,9 @@ public class BaseGLObject {
         }
     }
 
-    public static class MaskGLObject extends BaseGLObject implements VideoLoader.VideoGLObjectImpl, ImageLoader.ImageGLObjectImpl {
+    public static class MaskGLObject extends BaseGLObject implements VideoLoader.VideoGLObjectImpl,
+            ImageLoader.ImageGLObjectImpl {
+
         private final BaseShader.MaskShader mMaskShader;
         private final BaseTexture.ImageTexture mMaskTexture;
         private final BaseTexture.VideoTexture mVideoTexture;

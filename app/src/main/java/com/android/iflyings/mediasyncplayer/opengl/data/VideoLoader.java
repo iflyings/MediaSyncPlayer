@@ -1,6 +1,7 @@
 package com.android.iflyings.mediasyncplayer.opengl.data;
 
 import android.graphics.SurfaceTexture;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -14,25 +15,21 @@ import java.io.IOException;
 
 
 public class VideoLoader implements VideoPlayer.OnTickListener,
-        NativePlayer.OnCompletionListener, VideoPlayer.OnErrorListener {
+        VideoPlayer.OnCompletionListener, VideoPlayer.OnErrorListener {
 
     private final String mVideoPath;
     private final boolean isHardWareCodec;
     private final Object mRenderLock = new Object();
 
-    private final VideoGLObjectImpl mVideoGLObjectImpl;
+    private final VideoGLObjectImpl mGLObjectImpl;
     private final LoaderCallback mLoaderCallback;
 
-    private NativePlayer mVideoPlayer;
+    private VideoPlayer mVideoPlayer;
     private SurfaceTexture mSurfaceTexture;
     private long mPresentationTimeUs = 0L;
 
-    public VideoLoader(VideoGLObjectImpl impl, LoaderCallback cb, String videoPath) {
-        this(impl,cb,videoPath,false);
-    }
-
     public VideoLoader(VideoGLObjectImpl impl, LoaderCallback cb, String videoPath, boolean isHardCodec) {
-        mVideoGLObjectImpl = impl;
+        mGLObjectImpl = impl;
         mLoaderCallback = cb;
         mVideoPath = videoPath;
         isHardWareCodec = isHardCodec;
@@ -40,18 +37,19 @@ public class VideoLoader implements VideoPlayer.OnTickListener,
 
     public void loadMedia() throws IOException {
         //Log.i(TAG, "onLoadMedia");
-        final Object lock = new Object();
         if (mVideoPlayer == null) {
-            mVideoPlayer = new NativePlayer();//new VideoPlayer();
+            mVideoPlayer = new VideoPlayer();
             mVideoPlayer.setSoftwareCodec(!isHardWareCodec);
             mVideoPlayer.setDataSource(mVideoPath);
-            //mVideoPlayer.setOnTickListener(this);
+            mVideoPlayer.setOnTickListener(this);
             mVideoPlayer.setOnCompletionListener(this);
-            //mVideoPlayer.setOnErrorListener(this);
+            mVideoPlayer.setOnErrorListener(this);
             //mVideoPlayer.setOnVideoSizeChangedListener(mLoaderCallback::notifyMediaSize);
+            final Object lock = new Object();
             mLoaderCallback.runInGLThread(() -> {
-                mVideoGLObjectImpl.create();
-                mSurfaceTexture = mVideoGLObjectImpl.getSurfaceTexture();
+                Log.i("zw", "mLoaderCallback.runInGLThread");
+                mGLObjectImpl.create();
+                mSurfaceTexture = mGLObjectImpl.getSurfaceTexture();
                 synchronized (lock) {
                     lock.notifyAll();
                 }
@@ -69,7 +67,7 @@ public class VideoLoader implements VideoPlayer.OnTickListener,
         }
         mVideoPlayer.setSurface(new Surface(mSurfaceTexture));
         mVideoPlayer.prepare();
-        mVideoPlayer.renderOneFrame();
+        mVideoPlayer.startAndWaitAtFirstFrame();
     }
 
     public void startMedia() {
@@ -87,7 +85,7 @@ public class VideoLoader implements VideoPlayer.OnTickListener,
             mRenderLock.notifyAll();
         }
         mSurfaceTexture.updateTexImage();
-        mSurfaceTexture.getTransformMatrix(mVideoGLObjectImpl.getTexMatrixData());
+        mSurfaceTexture.getTransformMatrix(mGLObjectImpl.getTexMatrixData());
     }
     public void stopMedia() {
         mPresentationTimeUs = 0;
@@ -95,7 +93,7 @@ public class VideoLoader implements VideoPlayer.OnTickListener,
     public void unloadMedia() {
         mPresentationTimeUs = 0;
         mVideoPlayer.release();
-        mLoaderCallback.runInGLThread(mVideoGLObjectImpl::destroy);
+        mLoaderCallback.runInGLThread(mGLObjectImpl::destroy);
         if (mSurfaceTexture != null) {
             mSurfaceTexture.release();
             mSurfaceTexture = null;
